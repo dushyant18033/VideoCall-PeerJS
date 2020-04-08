@@ -3,8 +3,60 @@
 <head>
     <meta charset="UTF-8">
     <title>Student</title>
+    <script src="https://cdn.jsdelivr.net/npm/peerjs@0.3.20/dist/peer.min.js"></script>
 </head>
 <body>
-    {{ session }}
+    <video id="vid" autoplay="true" controls="true"></video>
+    <br>
+    <button onclick="connect()">Connect Now</button>
+
+    <script>
+        let UpeerID = '{{ user.uname }}';
+        console.log(UpeerID);
+
+        const peer = new Peer(UpeerID, {key: 'lwjd5qra8257b9'});
+        let video = document.getElementById('vid');
+
+        video.onloadedmetadata = function(e) {
+            video.play();
+        };
+
+        let videoStream = null;
+        navigator.getUserMedia(
+		{
+  			video: { width: 1280, height: 720 }
+		},
+		function(stream){
+			videoStream = stream;
+		},
+		function(err)
+		{
+			console.log('MediaError', err);
+		});
+
+		peer.on('error', function(err) {
+			console.log('error:');
+			console.log(err.type);
+		});
+
+		peer.on('open', function(id) {
+			console.log('ID: '+id);
+		});
+
+		function connect() {
+
+            let TpeerID = '{{ session.teacher.uname }}';
+            const call = peer.call(TpeerID, videoStream);
+
+            call.on('stream', function(stream) {
+				console.log('Connected');
+				video.srcObject = stream;
+			});
+
+			console.log(call);
+			console.log('Sent a call');
+		}
+
+    </script>
 </body>
 </html>

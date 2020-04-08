@@ -3,8 +3,60 @@
 <head>
     <meta charset="UTF-8">
     <title>Teacher</title>
+    <script src="https://cdn.jsdelivr.net/npm/peerjs@0.3.20/dist/peer.min.js"></script>
 </head>
 <body>
-    {{ session }}
+
+    <video id="vid1" autoplay="true" controls="true" width="640" height="360"></video>
+    <video id="vid2" autoplay="true" controls="true" width="640" height="360"></video>
+    <br>
+    <video id="vid3" autoplay="true" controls="true" width="640" height="360"></video>
+    <video id="vid4" autoplay="true" controls="true" width="640" height="360"></video>
+
+    <script>
+        let video = document.querySelectorAll('video');
+        for(let i=0; i<video.length; i++)
+        {
+            video[i].onloadedmetadata = function(e) {
+                video[i].play();
+            };
+        }
+        let ctr=0;
+
+        let TpeerID = '{{ user.uname }}';   //peer ID for the teacher
+        console.log(TpeerID);
+        const peer = new Peer(TpeerID, {key: 'lwjd5qra8257b9'});
+        peer.on('open', function(id) {
+			console.log('ID: '+id);
+		});
+		peer.on('error', function(err) {
+			console.log('error:');
+			console.log(err.type);
+		});
+
+        let videoStream = null;
+        navigator.getUserMedia(
+		{
+  			video: { width: 1280, height: 720 }
+		},
+		function(stream){
+			videoStream = stream;
+		},
+		function(err)
+		{
+			console.log('MediaError', err);
+		});
+
+		peer.on('call', function(call){
+			call.answer(videoStream);
+			console.log('Received a call',call);
+
+			call.on('stream', function(stream) {
+				console.log('Connected');
+				video[(ctr++)%4].srcObject = stream;
+			});
+  		});
+
+    </script>
 </body>
 </html>
