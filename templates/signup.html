@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>ACTIVITY TRACKER</title>
+    <link rel="stylesheet" href="static//css//main.css">
+</head>
+<body>
+    <div style="text-align: center;">
+        <h1>ACTIVITY TRACKER REGISTER</h1>
+
+        <form action="/signup" method="POST">
+            Username: <input type="username" name="username" placeholder="Choose a Username">
+            <br>
+            Password: <input type="password" name="password" placeholder="Choose a Password">
+            <br>
+            <br>
+            Register As:<br>
+            <input type="radio" id="teacher" name="usertype" value="teacher">
+            <label for="teacher">Teacher</label><br>
+            <input type="radio" id="student" name="usertype" value="student">
+            <label for="student">Student</label><br>
+            <br>
+            <input type="submit" value="Register">
+        </form>
+    </div>
+</body>
+</html>
