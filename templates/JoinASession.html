@@ -5,8 +5,23 @@
     <title>ACTIVITY TRACKER</title>
 </head>
 <body>
-    logged in
-    <br>
-    connect to a session
+    User: {{ user.uname }}<br>
+    Logged As: {{ user.utype }}<br>
+
+    {% if user.utype == 'teacher' %}
+    <form action="/begin" method="POST">
+        <input type="hidden" name="username" value="{{ user.uname }}">
+        <input type="submit" value="Start A Session">
+    </form>
+    {% endif %}
+
+    {% if user.utype == 'student' %}
+    <form action="/join" method="POST">
+        <input type="hidden" name="username" value="{{ user.uname }}">
+        <input type="number" name="sessionid" placeholder="Enter session id given by your teacher">
+        <input type="submit" value="Join Session">
+    </form>
+    {% endif %}
+
 </body>
 </html>
