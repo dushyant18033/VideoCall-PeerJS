@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request
 
+
 app = Flask(__name__)
 
 userType = {'student': 0, 'teacher': 1}
@@ -119,4 +120,5 @@ def joinASession():
 '''
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    # app.run(host='0.0.0.0', debug=True, ssl_context=('cert.pem', 'key.pem'))
+    app.run(debug=True, ssl_context=('cert.pem', 'key.pem'))
