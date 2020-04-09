@@ -46,7 +46,8 @@
         let videoStream = null;
         navigator.getUserMedia(
 		{
-  			video: { width: 1280, height: 720 }
+  			video: { width: 1280, height: 720 },
+  			audio: true
 		},
 		function(stream){
 			videoStream = stream;
