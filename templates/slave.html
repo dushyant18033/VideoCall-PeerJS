@@ -6,17 +6,21 @@
     <script src="https://cdn.jsdelivr.net/npm/peerjs@0.3.20/dist/peer.min.js"></script>
 </head>
 <body>
-    <h3>Session ID: {{ session.sess_id }}</h3>
+    <h3>User: {{ user.uname }}</h3>
+    <h3 id="peerid"></h3>
     <br>
     <video id="vid" autoplay="true" controls="true"></video>
     <br>
     <button onclick="connect()">Connect Now</button>
 
+    <form action="/" method="POST">
+        <input type="hidden" name="username" value=""><br>
+        <input type="hidden" name="password" value=""><br>
+        <input type="submit" id="backToHome" value="Home Page">
+    </form>
     <script>
-        let UpeerID = '{{ user.uname }}';
-        console.log(UpeerID);
 
-        const peer = new Peer(UpeerID, {key: 'lwjd5qra8257b9'});
+        const peer = new Peer({key: 'lwjd5qra8257b9'});
         let video = document.getElementById('vid');
 
         video.onloadedmetadata = function(e) {
@@ -39,6 +43,7 @@
 		peer.on('error', function(err) {
 			console.log('error:');
 			console.log(err.type);
+            document.getElementById("backToHome").click();
 		});
 
 		peer.on('open', function(id) {
@@ -47,7 +52,9 @@
 
 		function connect() {
 
-            let TpeerID = '{{ session.teacher.uname }}';
+            let TpeerID = '{{ TpeerID }}';
+            document.getElementById('peerid').innerText='Session ID: '+TpeerID;
+
             const call = peer.call(TpeerID, videoStream);
 
             call.on('stream', function(stream) {

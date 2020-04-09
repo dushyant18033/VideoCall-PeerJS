@@ -7,7 +7,6 @@ userType = {'student': 0, 'teacher': 1}
 
 
 class user:
-    # peerID = username
     def __init__(self, uname, passwd, utype):
         self.uname = uname
         self.passwd = passwd
@@ -20,34 +19,17 @@ class user:
         return self.passwd == passwd
 
 
-class session:
-    def __init__(self, sid, teacher):
-        self.sess_id = sid
-        self.teacher = teacher
-        self.students = set()
-
-    def student_join(self, stud):
-        self.students.add(stud)
-
-    def __str__(self):
-        string = str(self.sess_id)
-        for i in self.students:
-            string += str(i)
-        return string
-
-
 def exists(uname):
-    for i in list_users:
+    for i in set_users:
         if uname == i.uname:
             return i
     return None
 
 
-list_users = set()
-list_sessions = dict()
+set_users = set()
 
-list_users.add(user('dush', 'panch', 'teacher'))
-list_users.add(user('dush1', 'panch', 'student'))
+set_users.add(user('dush', 'panch', 'teacher'))
+set_users.add(user('dush1', 'panch', 'student'))
 
 
 @app.route('/', methods=['POST', 'GET'])
@@ -84,40 +66,24 @@ def signup():  # sign up page interaction
                 return render_template('signup.html')
             us = exists(uname)
             if us is None:
-                list_users.add(user(uname, passwd, utype))
+                set_users.add(user(uname, passwd, utype))
                 return render_template('home.html')
             else:
                 return render_template('signup.html')
 
 
 @app.route('/begin', methods=['POST', 'GET'])
-def begin():  # session join/create interaction
+def begin():
     cur_user = exists(request.form.get('username'))
-    sess = session('0000'+str(len(list_sessions)), cur_user)
-    list_sessions[sess.sess_id] = sess
-    return render_template('master.html', session=sess, user=cur_user)
+    return render_template('master.html', user=cur_user)
 
 
 @app.route('/join', methods=['POST', 'GET'])
 def join():
     cur_user = exists(request.form.get('username'))
-    ssid = request.form.get('sessionid')
-    if ssid in list_sessions:
-        sess = list_sessions[ssid]
-        sess.student_join(cur_user)
-        return render_template('slave.html', session=sess, user=cur_user)
-    else:
-        return render_template('home.html')
+    ssid = request.form.get('TpeerID')
+    return render_template('slave.html', user=cur_user, TpeerID=ssid)
 
-
-'''
-@app.route('/join', methods=['POST','GET'])
-def joinASession():
-    if request.method == 'GET':
-        return render_template('JoinASession.html')
-    else:
-        sid = request.form.get('sessionid')
-'''
 
 if __name__ == "__main__":
     # app.run(host='0.0.0.0', debug=True, ssl_context=('cert.pem', 'key.pem'))

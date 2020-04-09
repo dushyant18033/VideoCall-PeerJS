@@ -18,7 +18,7 @@
     {% if user.utype == 'student' %}
     <form action="/join" method="POST">
         <input type="hidden" name="username" value="{{ user.uname }}">
-        <input type="number" name="sessionid" placeholder="Enter session id given by your teacher">
+        <input type="text" name="TpeerID" placeholder="Enter session id given by your teacher">
         <input type="submit" value="Join Session">
     </form>
     {% endif %}
