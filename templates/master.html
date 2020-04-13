@@ -23,6 +23,9 @@
     <video id="vid3" autoplay="true" controls="true" width="640" height="360"></video>
     <video id="vid4" autoplay="true" controls="true" width="640" height="360"></video>
 
+    <br>
+        <video id="own_vid" autoplay="true" controls="true" width="320" height="180"></video>
+    <br>
 
 
     <form action="/" method="POST">
@@ -72,6 +75,7 @@
 		},
 		function(stream){
 			videoStream = stream;
+			document.getElementById('own_vid').srcObject = stream;
 		},
 		function(err)
 		{

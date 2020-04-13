@@ -9,9 +9,13 @@
     <h3>User: {{ user.uname }}</h3>
     <h3 id="peerid"></h3>
     <br>
-    <video id="vid" autoplay="true" controls="true"></video>
+    <video id="vid" autoplay="true" controls="true" width="1280" height="720"></video>
     <br>
     <button onclick="connect()">Connect Now</button>
+
+    <br>
+    <video id="own_vid" autoplay="true" controls="true" width="640" height="360"></video>
+    <br>
 
     <form action="/" method="POST">
         <input type="hidden" name="username" value=""><br>
@@ -36,6 +40,7 @@
 		},
 		function(stream){
 			videoStream = stream;
+			document.getElementById('own_vid').srcObject = stream;
 		},
 		function(err)
 		{
