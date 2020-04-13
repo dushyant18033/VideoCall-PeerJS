@@ -16,11 +16,12 @@
     <form action="/" method="POST">
         <input type="hidden" name="username" value=""><br>
         <input type="hidden" name="password" value=""><br>
-        <input type="submit" id="backToHome" value="Home Page">
+        <input type="submit" id="backToHome" onclick="logout()" value="Leave Session">
     </form>
     <script>
 
         const peer = new Peer({key: 'lwjd5qra8257b9'});
+        let call=null;
         let video = document.getElementById('vid');
 
         video.onloadedmetadata = function(e) {
@@ -44,6 +45,10 @@
 		peer.on('error', function(err) {
 			console.log('error:');
 			console.log(err.type);
+			if(err.type == "peer-unavailable")
+			    alert('No session with given session id has been started yet');
+			else
+    			alert('You were disconnected from the session due to some error.');
             document.getElementById("backToHome").click();
 		});
 
@@ -51,17 +56,34 @@
 			console.log('ID: '+id);
 		});
 
+		peer.on('disconnected', function () {
+            peer.reconnect();
+        });
+
+		function logout()
+        {
+            call.close();
+            peer.destroy();
+        }
+
 		function connect() {
+
+            while(!peer.open);
 
             let TpeerID = '{{ TpeerID }}';
             document.getElementById('peerid').innerText='Session ID: '+TpeerID;
 
-            const call = peer.call(TpeerID, videoStream);
+            call = peer.call(TpeerID, videoStream);
 
             call.on('stream', function(stream) {
 				console.log('Connected');
 				video.srcObject = stream;
 			});
+
+            call.on('close', function () {
+                alert('You were disconnected from the session.');
+                document.getElementById("backToHome").click();
+            });
 
 			console.log(call);
 			console.log('Sent a call');

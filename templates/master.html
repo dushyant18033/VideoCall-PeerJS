@@ -8,6 +8,14 @@
 <body>
     <h3>User: {{ user.uname }}</h3>
     <h3 id="peerid"></h3>
+
+    <h3>Connected Users:</h3>
+    <ol type="1">
+        <li id="user1">None</li>
+        <li id="user2">None</li>
+        <li id="user3">None</li>
+        <li id="user4">None</li>
+    </ol>
     <br>
     <video id="vid1" autoplay="true" controls="true" width="640" height="360"></video>
     <video id="vid2" autoplay="true" controls="true" width="640" height="360"></video>
@@ -16,27 +24,40 @@
     <video id="vid4" autoplay="true" controls="true" width="640" height="360"></video>
 
 
+
     <form action="/" method="POST">
         <input type="hidden" name="username" value=""><br>
         <input type="hidden" name="password" value=""><br>
-        <input type="submit" id="backToHome" value="Home Page">
+        <input type="submit" id="backToHome" value="End Session" onclick="logout()">
     </form>
 
     <script>
         let video = document.querySelectorAll('video');
+        let users = document.querySelectorAll('li');
         for(let i=0; i<video.length; i++)
         {
             video[i].onloadedmetadata = function(e) {
                 video[i].play();
             };
         }
-        let ctr=0;
 
         const peer = new Peer({key: 'lwjd5qra8257b9'});
+        let students = [null,null,null,null];
+
+
+
+
+        function logout()
+        {
+            peer.destroy();
+        }
         peer.on('open', function(id) {
 			console.log('ID: '+id);
 			document.getElementById('peerid').innerText='Session ID: '+id;
 		});
+        peer.on('disconnected', function () {
+            peer.reconnect();
+        });
 		peer.on('error', function(err) {
 			console.log('error:');
 			console.log(err.type);
@@ -46,7 +67,7 @@
         let videoStream = null;
         navigator.getUserMedia(
 		{
-  			video: { width: 1280, height: 720 },
+  			video: {},
   			audio: true
 		},
 		function(stream){
@@ -60,12 +81,42 @@
 		peer.on('call', function(call){
 			call.answer(videoStream);
 			console.log('Received a call',call);
-			
+
 			call.on('stream', function(stream) {
 				console.log('Connected');
-				video[(ctr++)%4].srcObject = stream;
+				for(let i=0; i<4; i++)
+                {
+                    let vid = video[i];
+                    if(vid["srcObject"] == null)
+                    {
+                        vid.srcObject = stream;
+                        students[i] = call["peer"];
+                        users[i].innerText=students[i];
+                        peer.connections[students[i]][0].on('close',function () {
+                           students[i] = null;
+                           users[i].innerText="None";
+                           vid["srcObject"] = null;
+                        });
+                        break;
+                    }
+                    else if(vid["srcObject"]["id"] == stream["id"])
+                        break;
+                    else if(!vid["srcObject"]["active"])
+                    {
+                        vid.srcObject = stream;
+                        students[i] = call["peer"];
+                        users[i].innerText=students[i];
+                        peer.connections[students[i]][0].on('close',function () {
+                           students[i] = null;
+                           users[i].innerText="None";
+                           vid["srcObject"] = null;
+                        });
+                        console.log("called");
+                    }
+                }
 			});
   		});
+
 
     </script>
 </body>
