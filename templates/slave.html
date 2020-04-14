@@ -17,11 +17,9 @@
     <video id="own_vid" autoplay="true" controls="true" width="640" height="360" muted="true"></video>
     <br>
 
-    <form action="/" method="POST">
-        <input type="hidden" name="username" value=""><br>
-        <input type="hidden" name="password" value=""><br>
-        <input type="submit" id="backToHome" onclick="logout()" value="Leave Session">
-    </form>
+
+    <a href="/logout" id="backToHome" onclick="logout()">Leave Session</a>
+
     <script>
 
         const peer = new Peer({key: 'lwjd5qra8257b9'});

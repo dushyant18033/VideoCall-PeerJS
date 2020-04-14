@@ -1,5 +1,5 @@
-from flask import Flask, render_template, request
-
+from flask import Flask, render_template, request, session
+import os
 
 app = Flask(__name__)
 
@@ -46,6 +46,7 @@ def login():  # login screen interaction
             if us is None:
                 return render_template('home.html')
             elif us.checkPwd(passwd):
+                session['logged_in'] = True
                 return render_template('JoinASession.html', user=us)
             else:
                 return render_template('home.html')
@@ -74,17 +75,31 @@ def signup():  # sign up page interaction
 
 @app.route('/begin', methods=['POST', 'GET'])
 def begin():
-    cur_user = exists(request.form.get('username'))
-    return render_template('master.html', user=cur_user)
+    if session.get('logged_in'):
+        cur_user = exists(request.form.get('username'))
+        return render_template('master.html', user=cur_user)
+    else:
+        return login()
 
 
 @app.route('/join', methods=['POST', 'GET'])
 def join():
-    cur_user = exists(request.form.get('username'))
-    ssid = request.form.get('TpeerID')
-    return render_template('slave.html', user=cur_user, TpeerID=ssid)
+    if session.get('logged_in'):
+        cur_user = exists(request.form.get('username'))
+        ssid = request.form.get('TpeerID')
+        return render_template('slave.html', user=cur_user, TpeerID=ssid)
+    else:
+        return login()
+
+
+@app.route("/logout")
+def logout():
+    session['logged_in'] = False
+    print('py called')
+    return login()
 
 
 if __name__ == "__main__":
-    # app.run(host='0.0.0.0', debug=True, ssl_context=('cert.pem', 'key.pem'))
-    app.run(debug=True, ssl_context=('cert.pem', 'key.pem'))
+    app.secret_key = os.urandom(12)
+    app.run(host='0.0.0.0', debug=True, ssl_context=('cert.pem', 'key.pem'))
+    #app.run(debug=True, ssl_context=('cert.pem', 'key.pem'))

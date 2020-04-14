@@ -27,12 +27,8 @@
         <video id="own_vid" autoplay="true" controls="true" width="320" height="180" muted="true"></video>
     <br>
 
+    <a href="/logout" id="backToHome" onclick="logout()">End Session</a>
 
-    <form action="/" method="POST">
-        <input type="hidden" name="username" value=""><br>
-        <input type="hidden" name="password" value=""><br>
-        <input type="submit" id="backToHome" value="End Session" onclick="logout()">
-    </form>
 
     <script>
         let video = document.querySelectorAll('video');
@@ -53,6 +49,7 @@
         function logout()
         {
             peer.destroy();
+            console.log("js called");
         }
         peer.on('open', function(id) {
 			console.log('ID: '+id);
