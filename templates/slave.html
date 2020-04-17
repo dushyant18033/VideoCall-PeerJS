@@ -36,6 +36,13 @@
         let call=null;
         let video = document.getElementById('vid');
 
+        video.width = screen.availWidth/2;
+        video.height = video.width*9/16;
+
+        let own_video = document.getElementById('own_vid');
+        own_video.width = screen.availWidth/4;
+        own_video.height = own_video.width*9/16;
+
         video.onloadedmetadata = function(e) {
             video.play();
         };

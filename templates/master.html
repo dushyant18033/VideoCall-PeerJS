@@ -14,22 +14,24 @@
         <h3 id="peerid"></h3>
 
         <h3><b>Connected Users:</b></h3>
-        <h4 id="user1">1. None</h4>
-        <h4 id="user2">2. None</h4>
-        <h4 id="user3">3. None</h4>
-        <h4 id="user4">4. None</h4>
+        <h4 id="user1" hidden="true">1. None</h4>
+        <h4 id="user2" hidden="true">2. None</h4>
+        <h4 id="user3" hidden="true">3. None</h4>
+        <h4 id="user4" hidden="true">4. None</h4>
 
         <br>
 
-            <video id="vid1" autoplay="true" controls="true" width="640" height="360"></video>
-            <video id="vid2" autoplay="true" controls="true" width="640" height="360"></video>
+            <video id="vid1" autoplay="true" controls="true"></video>
             <br>
-            <video id="vid3" autoplay="true" controls="true" width="640" height="360"></video>
-            <video id="vid4" autoplay="true" controls="true" width="640" height="360"></video>
+            <video id="vid2" autoplay="true" controls="true"></video>
+            <br>
+            <video id="vid3" autoplay="true" controls="true"></video>
+            <br>
+            <video id="vid4" autoplay="true" controls="true"></video>
             <br>
 
             <br>
-                <video id="own_vid" autoplay="true" controls="true" width="320" height="180" muted="true"></video>
+                <video id="own_vid" autoplay="true" controls="true" muted="true"></video>
             <br>
 
         <br>
@@ -42,14 +44,26 @@
  </div>
 
     <script>
+
+
+
         let video = document.querySelectorAll('video');
         let users = document.querySelectorAll('h4');
-        for(let i=0; i<video.length; i++)
+        for(let i=0; i<video.length-1; i++)
         {
             video[i].onloadedmetadata = function(e) {
                 video[i].play();
             };
+            video[i].width = screen.availWidth/2;
+            video[i].height = video[i].width*9/16;
         }
+
+        video[4].onloadedmetadata = function(e) {
+            video[4].play();
+        };
+        video[4].width = screen.availWidth/4;
+        video[4].height = video[4].width*9/16;
+
 
         const peer = new Peer({key: 'lwjd5qra8257b9'});
         let students = [null,null,null,null];
@@ -104,9 +118,11 @@
                         vid.srcObject = stream;
                         students[i] = call["peer"];
                         users[i].innerText=i+1+". "+students[i];
+                        users[i].hidden = false;
                         peer.connections[students[i]][0].on('close',function () {
                            students[i] = null;
                            users[i].innerText=i+1+". "+"None";
+                           users[i].hidden = true;
                            vid["srcObject"] = null;
                         });
                         break;
@@ -118,9 +134,11 @@
                         vid.srcObject = stream;
                         students[i] = call["peer"];
                         users[i].innerText=i+1+". "+students[i];
+                        users[i].hidden = false;
                         peer.connections[students[i]][0].on('close',function () {
                            students[i] = null;
                            users[i].innerText=i+1+". "+"None";
+                           users[i].hidden = true;
                            vid["srcObject"] = null;
                         });
                         console.log("called");
@@ -145,7 +163,6 @@
         }
 
 		.login-page {
-		  width: 1920px;
 		  padding: 8% 0 0;
 		  margin: auto;
 		}
@@ -153,7 +170,6 @@
 		  position: relative;
 		  z-index: 1;
 		  background: #ffffffb0;
-		  max-width: 1500px;
 		  margin: 0 auto 100px;
 		  padding: 45px;
 		  text-align: center;
