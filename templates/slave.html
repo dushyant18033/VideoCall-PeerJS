@@ -30,11 +30,13 @@
       </div>
      </div>
 
+     <canvas id="canvas" hidden="true"></canvas>
     <script>
 
         const peer = new Peer({key: 'lwjd5qra8257b9'});
         let call=null;
         let video = document.getElementById('vid');
+        let canvas = document.getElementById('canvas');
 
         video.width = screen.availWidth/2;
         video.height = video.width*9/16;
@@ -43,24 +45,26 @@
         own_video.width = screen.availWidth/4;
         own_video.height = own_video.width*9/16;
 
-        video.onloadedmetadata = function(e) {
-            video.play();
-        };
+        function startup()
+        {
+            video.onloadedmetadata = function (e) {
+                video.play();
+            };
 
-        let videoStream = null;
-        navigator.getUserMedia(
-		{
-  			video: true,
-            audio: true
-		},
-		function(stream){
-			videoStream = stream;
-			document.getElementById('own_vid').srcObject = stream;
-		},
-		function(err)
-		{
-			console.log('MediaError', err);
-		});
+            let videoStream = null;
+            navigator.getUserMedia(
+                {
+                    video: true,
+                    audio: true
+                },
+                function (stream) {
+                    videoStream = stream;
+                    document.getElementById('own_vid').srcObject = stream;
+                },
+                function (err) {
+                    console.log('MediaError', err);
+                });
+        }
 
 		peer.on('error', function(err) {
 			console.log('error:');
@@ -99,7 +103,7 @@
             let TpeerID = '{{ TpeerID }}';
             document.getElementById('peerid').innerText='Session ID: '+TpeerID;
 
-            call = peer.call(TpeerID, videoStream);
+            call = peer.call(TpeerID, canvas.captureStream());
 
             call.on('stream', function(stream) {
 				console.log('Connected');
@@ -114,6 +118,20 @@
 			console.log(call);
 			console.log('Sent a call');
 		}
+
+
+		function takeFrame() {
+		    let context = canvas.getContext('2d');
+	      	canvas.width = own_video.width;
+    	  	canvas.height = own_video.height;
+    	  	context.drawImage(own_video, 0, 0, own_video.width, own_video.height);
+		    requestAnimationFrame(takeFrame);
+		  }
+
+		  window.addEventListener('load', startup, false);
+
+		  takeFrame();
+
 
     </script>
 
