@@ -66,6 +66,12 @@
 
 
         const peer = new Peer({key: 'lwjd5qra8257b9'});
+        /*const peer = new Peer('master',
+            {
+                host: '192.168.0.103',
+                port: 9000,
+                key: 'peerjs'
+            });*/
         let students = [null,null,null,null];
 
 
@@ -86,7 +92,7 @@
 		peer.on('error', function(err) {
 			console.log('error:');
 			console.log(err.type);
-			document.getElementById("backToHome").click();
+			//document.getElementById("backToHome").click();
 		});
 
         let videoStream = null;

@@ -14,13 +14,14 @@
 
         <br>
 
-        <video id="vid" autoplay="true" controls="true" width="1280" height="720"></video>
+        <video id="vid" autoplay="true" controls="true"></video>
         <br>
         <button id="connect-button" hidden="true" onclick="connect()">Connect Now</button>
 
         <div class="login-form">
             <br>
-            <video id="own_vid" autoplay="true" controls="true" width="640" height="360" muted="true"></video>
+            <video id="own_vid" autoplay="true" controls="true" muted="true"></video>
+            <canvas id="canvas"></canvas>
             <br>
 
             <a href="/logout" id="backToHome" hidden="true" onclick="logout()">
@@ -30,40 +31,55 @@
       </div>
      </div>
 
-     <canvas id="canvas" hidden="true"></canvas>
+
     <script>
 
         const peer = new Peer({key: 'lwjd5qra8257b9'});
+        /*const peer = new Peer('slave',
+            {
+                host: '192.168.0.103',
+                port: 9000,
+                key: 'peerjs'
+            });*/
         let call=null;
         let video = document.getElementById('vid');
         let canvas = document.getElementById('canvas');
+        let track = null;
+		let image = null;
 
-        video.width = screen.availWidth/2;
+
+
+        let videoStream = null;
+
+        video.width = screen.availWidth;
         video.height = video.width*9/16;
 
         let own_video = document.getElementById('own_vid');
         own_video.width = screen.availWidth/4;
         own_video.height = own_video.width*9/16;
 
+
+        video.onloadedmetadata = function (e) {
+            video.play();
+        };
+
+
         function startup()
         {
-            video.onloadedmetadata = function (e) {
-                video.play();
-            };
-
-            let videoStream = null;
-            navigator.getUserMedia(
-                {
-                    video: true,
-                    audio: true
-                },
-                function (stream) {
-                    videoStream = stream;
-                    document.getElementById('own_vid').srcObject = stream;
-                },
-                function (err) {
-                    console.log('MediaError', err);
-                });
+            navigator.mediaDevices.getUserMedia(
+            {
+                video: true,
+                audio: true
+            }).then(
+            function (stream) {
+                videoStream = stream;
+                track = stream.getVideoTracks();
+                image = new ImageCapture(track[0]);
+                own_video.srcObject = stream;
+            }).catch(
+            function (err) {
+                console.log('MediaError', err);
+            });
         }
 
 		peer.on('error', function(err) {
@@ -96,6 +112,10 @@
         {
 		    if(!peer.open)
 		        return;
+		    if(image == null)
+		        return;
+
+		    draw();
 
             document.getElementById('backToHome').hidden=false;
 			document.getElementById('connect-button').hidden=true;
@@ -103,7 +123,9 @@
             let TpeerID = '{{ TpeerID }}';
             document.getElementById('peerid').innerText='Session ID: '+TpeerID;
 
-            call = peer.call(TpeerID, canvas.captureStream());
+            let vs = canvas.captureStream(60);
+            vs.addTrack(videoStream.getAudioTracks()[0]);
+            call = peer.call(TpeerID, vs);
 
             call.on('stream', function(stream) {
 				console.log('Connected');
@@ -117,10 +139,13 @@
 
 			console.log(call);
 			console.log('Sent a call');
+
+			own_video.width=canvas.width;
+			own_video.height=canvas.height;
 		}
 
 
-		function takeFrame() {
+		/*function takeFrame() {
 		    let context = canvas.getContext('2d');
 	      	canvas.width = own_video.width;
     	  	canvas.height = own_video.height;
@@ -130,7 +155,43 @@
 
 		  window.addEventListener('load', startup, false);
 
-		  takeFrame();
+		  takeFrame();*/
+
+        function GrabFrame() {   //Copied from https://googlechrome.github.io/samples/image-capture/grab-frame-take-photo.html
+		  image.grabFrame()
+		  .then(imageBitmap => {
+		    drawCanvas(imageBitmap);
+		  })
+		  .catch(error => console.log(error));
+		}
+
+		function drawCanvas(img) {  //Copied from https://googlechrome.github.io/samples/image-capture/grab-frame-take-photo.html
+		  canvas.width = getComputedStyle(canvas).width.split('px')[0];
+		  canvas.height = getComputedStyle(canvas).height.split('px')[0];
+		  let ratio  = Math.min(canvas.width / img.width, canvas.height / img.height);
+		  let x = (canvas.width - img.width * ratio) / 2;
+		  let y = (canvas.height - img.height * ratio) / 2;
+		  canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
+		  canvas.getContext('2d').drawImage(img, 0, 0, img.width, img.height, x, y, img.width * ratio, img.height * ratio);
+		}
+
+		/*vid.addEventListener('timeupdate', function(ev){
+	      GrabFrame();
+	    });*/
+
+	    let lastTime=-1;
+	    function draw() {   //Ref: https://stackoverflow.com/questions/17044567/get-frame-change-in-video-html5
+		    let time = own_video.currentTime;
+		    if (time !== lastTime) {
+		        //console.log('time: ' + time);
+		        GrabFrame();
+		        lastTime = time;
+		    }
+		    //wait approximately 16ms and run again
+		    requestAnimationFrame(draw);
+		}
+
+		window.addEventListener('load',startup);
 
 
     </script>
@@ -148,7 +209,7 @@
             border-radius: 10px;
         }
 		.login-page {
-		  width: 1920px;
+		  width: .screen.width;
 		  padding: 8% 0 0;
 		  margin: auto;
 		}
@@ -156,7 +217,7 @@
 		  position: relative;
 		  z-index: 1;
 		  background: #ffffffb0;
-		  width: 1300px;
+		  width: .login-page.width;
 		  margin: 0 auto 100px;
 		  padding: 45px;
 		  text-align: center;
@@ -178,7 +239,7 @@
 		  text-transform: uppercase;
 		  outline: 0;
 		  background: #4CAF50;
-		  width: 100%;
+		  width: 200px;
 		  border: 0;
 		  padding: 15px;
 		  color: #FFFFFF;
