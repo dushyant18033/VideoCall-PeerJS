@@ -18,13 +18,13 @@
           <br>
           <br>
 
-          <img src="../imgs/cameraon.png" id="cam-button" width="50" onclick="cameraToggle()">
+          <img src="static/imgs/cameraon.png" id="cam-button" width="50" onclick="cameraToggle()">
             &nbsp;
           <a href="/logout" id="backToHome" hidden="true" onclick="logout()">
-            <img src="../imgs/end.svg" height="50">
+            <img src="static/imgs/end.svg" height="50">
           </a>
             &nbsp;
-          <img src="../imgs/micon.png" id="mic-button" width="50" onclick="micToggle()">
+          <img src="static/imgs/micon.png" id="mic-button" width="50" onclick="micToggle()">
 
           </div>
       </div>
@@ -51,17 +51,17 @@
         {
             videoTrack.enabled=!videoTrack.enabled;
             if(videoTrack.enabled)
-                document.getElementById('cam-button').src='../imgs/cameraon.png';
+                document.getElementById('cam-button').src='static/imgs/cameraon.png';
             else
-                document.getElementById('cam-button').src='../imgs/cameraoff.png';
+                document.getElementById('cam-button').src='static/imgs/cameraoff.png';
         }
         function micToggle()
         {
             audioTrack.enabled=!audioTrack.enabled;
             if(audioTrack.enabled)
-                document.getElementById('mic-button').src='../imgs/micon.png';
+                document.getElementById('mic-button').src='static/imgs/micon.png';
             else
-                document.getElementById('mic-button').src='../imgs/micoff.png';
+                document.getElementById('mic-button').src='static/imgs/micoff.png';
         }
 
         const peer = new Peer({key: 'lwjd5qra8257b9'});
