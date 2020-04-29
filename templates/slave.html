@@ -12,55 +12,112 @@
         <h3><b>User:</b> {{ user.uname }}</h3>
         <h3 id="peerid">Initializing ...</h3>
 
-        <br>
+          <div class="login-form">
+            <button id="connect-button" hidden="true" onclick="connect()">Connect Now</button>
 
-        <video id="vid" autoplay="true" controls="true" width="1280" height="720"></video>
-        <br>
-        <button id="connect-button" hidden="true" onclick="connect()">Connect Now</button>
+          <br>
+          <br>
 
-        <div class="login-form">
-            <br>
-            <video id="own_vid" autoplay="true" controls="true" width="640" height="360" muted="true"></video>
-            <br>
+          <img src="../imgs/cameraon.png" id="cam-button" width="50" onclick="cameraToggle()">
+            &nbsp;
+          <a href="/logout" id="backToHome" hidden="true" onclick="logout()">
+            <img src="../imgs/end.svg" height="50">
+          </a>
+            &nbsp;
+          <img src="../imgs/micon.png" id="mic-button" width="50" onclick="micToggle()">
 
-            <a href="/logout" id="backToHome" hidden="true" onclick="logout()">
-                <img src="https://imageog.flaticon.com/icons/png/512/61/61223.png?size=1200x630f&pad=10,10,10,10&ext=png&bg=FFFFFFFF" width="100">
-            </a>
-        </div>
+          </div>
       </div>
      </div>
 
+     <div align="center">
+
+        <video id="vid" autoplay="true" controls="true"></video>
+        <br>
+        <br>
+        <video id="own_vid" autoplay="true" controls="true" muted="true"></video>
+        <br>
+        <br>
+        <canvas id="canvas"></canvas>
+        <br>
+        <br>
+
+    </div>
+
+
+
     <script>
+        function cameraToggle()
+        {
+            videoTrack.enabled=!videoTrack.enabled;
+            if(videoTrack.enabled)
+                document.getElementById('cam-button').src='../imgs/cameraon.png';
+            else
+                document.getElementById('cam-button').src='../imgs/cameraoff.png';
+        }
+        function micToggle()
+        {
+            audioTrack.enabled=!audioTrack.enabled;
+            if(audioTrack.enabled)
+                document.getElementById('mic-button').src='../imgs/micon.png';
+            else
+                document.getElementById('mic-button').src='../imgs/micoff.png';
+        }
 
         const peer = new Peer({key: 'lwjd5qra8257b9'});
+        /*const peer = new Peer('slave',
+            {
+                host: '192.168.0.103',
+                port: 9000,
+                key: 'peerjs'
+            });*/
         let call=null;
         let video = document.getElementById('vid');
+        let canvas = document.getElementById('canvas');
+        let track = null;
+		let image = null;
 
-        video.width = screen.availWidth/2;
-        video.height = video.width*9/16;
+
+
+        let videoStream = null;
+        let canvasStream = null;
+
+        let videoTrack = null;
+        let audioTrack = null;
+
+
+       // video.width = screen.availWidth;
+       // video.height = video.width*9/16;
 
         let own_video = document.getElementById('own_vid');
-        own_video.width = screen.availWidth/4;
-        own_video.height = own_video.width*9/16;
+        //own_video.width = screen.availWidth/4;
+        //own_video.height = own_video.width*9/16;
 
-        video.onloadedmetadata = function(e) {
+
+        video.onloadedmetadata = function (e) {
             video.play();
         };
 
-        let videoStream = null;
-        navigator.getUserMedia(
-		{
-  			video: true,
-            audio: true
-		},
-		function(stream){
-			videoStream = stream;
-			document.getElementById('own_vid').srcObject = stream;
-		},
-		function(err)
-		{
-			console.log('MediaError', err);
-		});
+
+        function startup()
+        {
+            navigator.mediaDevices.getUserMedia(
+            {
+                video: true,
+                audio: true
+            }).then(
+            function (stream) {
+                videoStream = stream;
+                track = stream.getVideoTracks();
+                videoTrack = videoStream.getVideoTracks()[0];
+			    audioTrack = videoStream.getAudioTracks()[0];
+                image = new ImageCapture(track[0]);
+                own_video.srcObject = stream;
+            }).catch(
+            function (err) {
+                console.log('MediaError', err);
+            });
+        }
 
 		peer.on('error', function(err) {
 			console.log('error:');
@@ -92,6 +149,10 @@
         {
 		    if(!peer.open)
 		        return;
+		    if(image == null)
+		        return;
+
+		    draw();
 
             document.getElementById('backToHome').hidden=false;
 			document.getElementById('connect-button').hidden=true;
@@ -99,7 +160,9 @@
             let TpeerID = '{{ TpeerID }}';
             document.getElementById('peerid').innerText='Session ID: '+TpeerID;
 
-            call = peer.call(TpeerID, videoStream);
+            canvasStream = canvas.captureStream(60);
+            canvasStream.addTrack(audioTrack);
+            call = peer.call(TpeerID, canvasStream);
 
             call.on('stream', function(stream) {
 				console.log('Connected');
@@ -113,7 +176,60 @@
 
 			console.log(call);
 			console.log('Sent a call');
+
+			canvas.width=own_video.videoWidth;
+			canvas.height=own_video.videoHeight;
 		}
+
+
+		/*function takeFrame() {
+		    let context = canvas.getContext('2d');
+	      	canvas.width = own_video.width;
+    	  	canvas.height = own_video.height;
+    	  	context.drawImage(own_video, 0, 0, own_video.width, own_video.height);
+		    requestAnimationFrame(takeFrame);
+		  }
+
+		  window.addEventListener('load', startup, false);
+
+		  takeFrame();*/
+
+        function GrabFrame() {   //Copied from https://googlechrome.github.io/samples/image-capture/grab-frame-take-photo.html
+		  image.grabFrame()
+		  .then(imageBitmap => {
+		    drawCanvas(imageBitmap);
+		  })
+		  .catch(error => console.log(error));
+		}
+
+		function drawCanvas(img) {  //Copied from https://googlechrome.github.io/samples/image-capture/grab-frame-take-photo.html
+		  canvas.width = getComputedStyle(canvas).width.split('px')[0];
+		  canvas.height = getComputedStyle(canvas).height.split('px')[0];
+		  let ratio  = Math.min(canvas.width / img.width, canvas.height / img.height);
+		  let x = (canvas.width - img.width * ratio) / 2;
+		  let y = (canvas.height - img.height * ratio) / 2;
+		  canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
+		  canvas.getContext('2d').drawImage(img, 0, 0, img.width, img.height, x, y, img.width * ratio, img.height * ratio);
+		}
+
+		/*vid.addEventListener('timeupdate', function(ev){
+	      GrabFrame();
+	    });*/
+
+	    let lastTime=-1;
+	    function draw() {   //Ref: https://stackoverflow.com/questions/17044567/get-frame-change-in-video-html5
+		    let time = own_video.currentTime;
+		    if (time !== lastTime) {
+		        //console.log('time: ' + time);
+		        GrabFrame();
+		        lastTime = time;
+		    }
+		    //wait approximately 16ms and run again
+		    requestAnimationFrame(draw);
+		}
+
+		window.addEventListener('load',startup);
+
 
     </script>
 
@@ -128,9 +244,15 @@
 
         video{
             border-radius: 10px;
+            width: auto;
         }
+        canvas{
+            border-radius: 10px;
+            width: auto;
+        }
+
 		.login-page {
-		  width: 1920px;
+		  width: auto;
 		  padding: 8% 0 0;
 		  margin: auto;
 		}
@@ -138,7 +260,7 @@
 		  position: relative;
 		  z-index: 1;
 		  background: #ffffffb0;
-		  width: 1300px;
+		  width: auto;
 		  margin: 0 auto 100px;
 		  padding: 45px;
 		  text-align: center;
@@ -160,7 +282,7 @@
 		  text-transform: uppercase;
 		  outline: 0;
 		  background: #4CAF50;
-		  width: 100%;
+		  width: 200px;
 		  border: 0;
 		  padding: 15px;
 		  color: #FFFFFF;
@@ -170,6 +292,22 @@
 		  cursor: pointer;
 		}
 		.form button:hover,.form button:active,.form button:focus {
+		  background: #43A047;
+		}
+        .form img {
+		  font-family: "Roboto", sans-serif;
+		  text-transform: uppercase;
+		  outline: 0;
+		  background: #4CAF50;
+		  border: 0;
+		  padding: 5px;
+		  color: #FFFFFF;
+		  font-size: 14px;
+		  -webkit-transition: all 0.3 ease;
+		  transition: all 0.3 ease;
+		  cursor: pointer;
+		}
+		.form img:hover,.form img:active,.form img:focus {
 		  background: #43A047;
 		}
 		.form .message {

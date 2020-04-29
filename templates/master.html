@@ -19,6 +19,24 @@
         <h4 id="user3" hidden="true">3. None</h4>
         <h4 id="user4" hidden="true">4. None</h4>
 
+        <div class="login-form">
+            <img src="../imgs/cameraon.png" id="cam-button" width="50" onclick="cameraToggle()">
+
+            &nbsp;
+
+            <a href="/logout" id="backToHome" onclick="logout()">
+                <img src="../imgs/end.svg" height="50">
+            </a>
+
+            &nbsp;
+
+            <img src="../imgs/micon.png" id="mic-button" width="50" onclick="micToggle()">
+        </div>
+  </div>
+ </div>
+
+    <div align="center">
+
         <br>
 
             <video id="vid1" autoplay="true" controls="true"></video>
@@ -36,15 +54,30 @@
 
         <br>
 
-        <a href="/logout" id="backToHome" onclick="logout()">
-            <img src="https://imageog.flaticon.com/icons/png/512/61/61223.png?size=1200x630f&pad=10,10,10,10&ext=png&bg=FFFFFFFF" width="100">
-        </a>
-
-  </div>
- </div>
-
+    </div>
     <script>
 
+        function cameraToggle()
+        {
+            videoTrack.enabled=!videoTrack.enabled;
+            if(videoTrack.enabled)
+                document.getElementById('cam-button').src='../imgs/cameraon.png';
+            else
+                document.getElementById('cam-button').src='../imgs/cameraoff.png';
+        }
+        function micToggle()
+        {
+            audioTrack.enabled=!audioTrack.enabled;
+            if(audioTrack.enabled)
+                document.getElementById('mic-button').src='../imgs/micon.png';
+            else
+                document.getElementById('mic-button').src='../imgs/micoff.png';
+        }
+
+        let videoStream = null;
+
+        let videoTrack = null;
+        let audioTrack = null;
 
 
         let video = document.querySelectorAll('video');
@@ -54,18 +87,24 @@
             video[i].onloadedmetadata = function(e) {
                 video[i].play();
             };
-            video[i].width = screen.availWidth/2;
-            video[i].height = video[i].width*9/16;
+            //video[i].width = screen.availWidth/2;
+            //video[i].height = video[i].width*9/16;
         }
 
         video[4].onloadedmetadata = function(e) {
             video[4].play();
         };
-        video[4].width = screen.availWidth/4;
-        video[4].height = video[4].width*9/16;
+        //video[4].width = screen.availWidth/4;
+        //video[4].height = video[4].width*9/16;
 
 
         const peer = new Peer({key: 'lwjd5qra8257b9'});
+        /*const peer = new Peer('master',
+            {
+                host: '192.168.0.103',
+                port: 9000,
+                key: 'peerjs'
+            });*/
         let students = [null,null,null,null];
 
 
@@ -86,10 +125,8 @@
 		peer.on('error', function(err) {
 			console.log('error:');
 			console.log(err.type);
-			document.getElementById("backToHome").click();
+			//document.getElementById("backToHome").click();
 		});
-
-        let videoStream = null;
         navigator.getUserMedia(
 		{
   			video: true,
@@ -98,6 +135,9 @@
 		function(stream){
 			videoStream = stream;
 			document.getElementById('own_vid').srcObject = stream;
+
+			videoTrack = videoStream.getVideoTracks()[0];
+			audioTrack = videoStream.getAudioTracks()[0];
 		},
 		function(err)
 		{
@@ -160,11 +200,13 @@
 
         video{
             border-radius: 10px;
+            width: auto;
         }
 
 		.login-page {
 		  padding: 8% 0 0;
 		  margin: auto;
+          width: auto;
 		}
 		.form {
 		  position: relative;
@@ -201,6 +243,22 @@
 		  cursor: pointer;
 		}
 		.form button:hover,.form button:active,.form button:focus {
+		  background: #43A047;
+		}
+        .form img {
+		  font-family: "Roboto", sans-serif;
+		  text-transform: uppercase;
+		  outline: 0;
+		  background: #4CAF50;
+		  border: 0;
+		  padding: 5px;
+		  color: #FFFFFF;
+		  font-size: 14px;
+		  -webkit-transition: all 0.3 ease;
+		  transition: all 0.3 ease;
+		  cursor: pointer;
+		}
+		.form img:hover,.form img:active,.form img:focus {
 		  background: #43A047;
 		}
 		.form .message {
