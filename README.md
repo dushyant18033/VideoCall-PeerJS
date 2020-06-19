@@ -1,4 +1,4 @@
-# ActivityTracking
+# PeerJS-VideoCalling
 
 ### Running the server
 _1. Clone this repository into your local machine._  
